@@ -1,0 +1,30 @@
+#!/usr/bin/env python3
+import requests
+from bs4 import BeautifulSoup
+import subprocess
+import sys
+
+BASE_URL = "http://www.whichtime.com/"
+USER = None
+PASS = None
+
+i = 1
+if USER == None:
+    USER = sys.argv[i]; i += 1
+if PASS == None:
+    PASS = sys.argv[i]; i += 1
+
+s = requests.Session()
+
+r = s.get(url=f"{BASE_URL}/default.php")
+soup = BeautifulSoup(r.text, features="lxml")
+svalue = soup.find("input", {"name": "s"})["value"]
+
+r = s.post(url=f"{BASE_URL}/default.php", data={"user": USER, "pass": PASS, "s": svalue, "login": "login"})
+r = s.get(url=f"{BASE_URL}/play.php?s={svalue}")
+soup = BeautifulSoup(r.text, features="lxml")
+link = soup.find("param", {"name": "movie"})["value"]
+
+link = f"{BASE_URL}/{link}"
+
+subprocess.call(["flashplayer", link])
